@@ -17,6 +17,14 @@ export const cartAtom = atom({
   coupon: "" as Coupon | null,
 });
 
+//set total price on cartAtom. This will become a heavy computation
+//https://jotai.org/docs/guides/performance#heavy-computation
+export const calcTotalPriceAtom = atom(null, (get, set) => {
+  const { items } = get(cartAtom);
+  const totalPrice = items.reduce((acc, item) => acc + Number(item.price), 0);
+  set(cartAtom, (prev) => ({ ...prev, totalPrice }));
+});
+
 export const couponSchema = z
   .string()
   .regex(/^[A-Z0-9]+$/)

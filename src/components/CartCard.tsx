@@ -1,19 +1,22 @@
 import { Button, Card, Title } from "@tremor/react";
 import { useAtom } from "jotai";
-import { cartAtom } from "../lib/cart";
+import { calcTotalPriceAtom, cartAtom } from "../lib/cart";
 
 export default function CartCard() {
   const [cart, setCart] = useAtom(cartAtom);
-  const { items } = cart;
+  const [, setCalcTotalPrice] = useAtom(calcTotalPriceAtom);
+  const { items, totalPrice } = cart;
 
   const removeFromCart = (id: string) => {
     setCart((cart) => ({
       ...cart,
       items: cart.items.filter((item) => item.id !== id),
     }));
+    setCalcTotalPrice();
   };
 
   console.log(items);
+
   return (
     <>
       <Title className="text-2xl flex justify-center mb-4">Cart</Title>
@@ -35,6 +38,10 @@ export default function CartCard() {
           ) : (
             <p className="text-center">No items in cart</p>
           )}
+        </div>
+        <div className="flex justify-between mt-4">
+          <Title className="text-2xl">Total</Title>
+          <Title className="text-2xl">${totalPrice}</Title>
         </div>
       </Card>
     </>
