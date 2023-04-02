@@ -13,10 +13,14 @@ A versatile shopping cart using best practices for react state management.
 
 ## Goals
 
-- A shopping cart that accepts a coupon using Jotai global state manager?
+- A shopping cart that accepts products and coupons using Jotai global state manager.
 
-- Add code that would allow for multiple products or coupons in our cart atom.
+- Have a cart that allows for multiple products and coupons in the cart.
 
 - Add validation when mutating the cart using Zod
 
-- Add code that will allow for multiple products to be in the cart but only one product affects the totalPrice. - Add code so that the coupon will only apply to the mainItem.
+- Have a cart that can be persisted to local storage
+
+- Have a cart that can load async data from an API
+
+- Have a that can change based on url params
