@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { Button, Card, Title } from "@tremor/react";
 import { useAtom, useSetAtom } from "jotai";
-import { calcTotalPriceAtom, cartAtom, Item } from "../lib/cart";
+import { addToCartAtom, calcTotalPriceAtom, cartAtom, Item } from "../lib/cart";
 
 //using faker js create an array of 3 items
 const products = Array.from({ length: 3 }, () => ({
@@ -9,6 +9,7 @@ const products = Array.from({ length: 3 }, () => ({
   name: faker.commerce.productName(),
   description: faker.commerce.productDescription(),
   price: faker.commerce.price(),
+  quantity: Math.floor(Math.random() * 10) + 1,
 }));
 
 const fallBack = () => (
@@ -22,21 +23,19 @@ const fallBack = () => (
 );
 
 export default function Products() {
-  const [cart, setCart] = useAtom(cartAtom);
+  const [cart] = useAtom(cartAtom);
   const setCalcTotalPrice = useSetAtom(calcTotalPriceAtom);
+  const setAddToCart = useSetAtom(addToCartAtom);
 
   const addToCart = (product: Item) => {
-    setCart((cart) => ({
-      ...cart,
-      items: [...cart.items, product],
-    }));
+    setAddToCart(product);
     setCalcTotalPrice();
   };
 
   const isDisabled = (product: Item) => {
     const { items } = cart;
     const item = items.find((item) => item.id === product.id);
-    return !!item;
+    return item ? item.quantity >= product.quantity : false;
   };
 
   return (
@@ -49,6 +48,10 @@ export default function Products() {
             <div className="flex-1 space-y-1">
               <Title className="text-2xl">{product.name}</Title>
               <p className="text-gray-500">{product.description}</p>
+            </div>
+            <div>
+              <span className="">Quantity</span>
+              <p className="text-2xl">{product.quantity}</p>
             </div>
             <div className="flex flex-col items-end">
               <Title className="text-2xl">${product.price}</Title>

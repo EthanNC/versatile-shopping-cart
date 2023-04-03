@@ -1,18 +1,21 @@
 import { Button, Card, Title } from "@tremor/react";
-import { useAtom } from "jotai";
-import { calcTotalPriceAtom, cartAtom } from "../lib/cart";
+import { useAtom, useSetAtom } from "jotai";
+import {
+  calcTotalPriceAtom,
+  cartAtom,
+  Item,
+  removeFromCartAtom,
+} from "../lib/cart";
 
 export default function CartCard() {
-  const [cart, setCart] = useAtom(cartAtom);
-  const [, setCalcTotalPrice] = useAtom(calcTotalPriceAtom);
+  const [cart] = useAtom(cartAtom);
+  const setRemoveFromCart = useSetAtom(removeFromCartAtom);
+  const setCalcTotalPrice = useSetAtom(calcTotalPriceAtom);
 
   const { items, totalPrice } = cart;
 
-  const removeFromCart = (id: string) => {
-    setCart((cart) => ({
-      ...cart,
-      items: cart.items.filter((item) => item.id !== id),
-    }));
+  const removeFromCart = (product: Item) => {
+    setRemoveFromCart(product);
     setCalcTotalPrice();
   };
 
@@ -24,10 +27,13 @@ export default function CartCard() {
           items.map((item) => (
             <div key={item.id} className="flex items-center space-x-4">
               <Title className="flex-1 text-2xl">{item.name}</Title>
-
+              <div>
+                <span className="">Quantity</span>
+                <p className="text-2xl">{item.quantity}</p>
+              </div>
               <div className="flex flex-col items-end">
                 <Title className="text-2xl">${item.price}</Title>
-                <Button onClick={() => removeFromCart(item.id)}>Remove</Button>
+                <Button onClick={() => removeFromCart(item)}>Remove</Button>
               </div>
             </div>
           ))
