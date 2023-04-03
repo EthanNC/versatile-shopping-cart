@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { Button, Card, Title } from "@tremor/react";
-import { useAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import { calcTotalPriceAtom, cartAtom, Item } from "../lib/cart";
 
 //using faker js create an array of 3 items
@@ -23,7 +23,7 @@ const fallBack = () => (
 
 export default function Products() {
   const [cart, setCart] = useAtom(cartAtom);
-  const [, setCalcTotalPrice] = useAtom(calcTotalPriceAtom);
+  const setCalcTotalPrice = useSetAtom(calcTotalPriceAtom);
 
   const addToCart = (product: Item) => {
     setCart((cart) => ({

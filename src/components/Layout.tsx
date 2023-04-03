@@ -1,6 +1,7 @@
-import { Col, Grid, Title } from "@tremor/react";
+import { Card, Col, Grid, Title } from "@tremor/react";
 import { Outlet } from "react-router-dom";
 import CartCard from "./CartCard";
+import { CouponList } from "./CouponList";
 
 export default function Layout() {
   return (
@@ -14,8 +15,9 @@ export default function Layout() {
         </Col>
 
         {/* KPI sidebar */}
-        <Col numColSpanLg={2}>
+        <Col numColSpanLg={2} className="space-y-12">
           <CartCard />
+          <CouponList />
         </Col>
       </Grid>
     </main>

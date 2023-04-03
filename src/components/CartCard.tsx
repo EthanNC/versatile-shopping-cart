@@ -5,6 +5,7 @@ import { calcTotalPriceAtom, cartAtom } from "../lib/cart";
 export default function CartCard() {
   const [cart, setCart] = useAtom(cartAtom);
   const [, setCalcTotalPrice] = useAtom(calcTotalPriceAtom);
+
   const { items, totalPrice } = cart;
 
   const removeFromCart = (id: string) => {
@@ -15,35 +16,29 @@ export default function CartCard() {
     setCalcTotalPrice();
   };
 
-  console.log(items);
-
   return (
-    <>
+    <Card>
       <Title className="text-2xl flex justify-center mb-4">Cart</Title>
-      <Card>
-        <div className="flex flex-col space-y-4">
-          {items.length ? (
-            items.map((item) => (
-              <div key={item.id} className="flex items-center space-x-4">
-                <Title className="flex-1 text-2xl">{item.name}</Title>
+      <div className="flex flex-col space-y-4">
+        {items.length ? (
+          items.map((item) => (
+            <div key={item.id} className="flex items-center space-x-4">
+              <Title className="flex-1 text-2xl">{item.name}</Title>
 
-                <div className="flex flex-col items-end">
-                  <Title className="text-2xl">${item.price}</Title>
-                  <Button onClick={() => removeFromCart(item.id)}>
-                    Remove
-                  </Button>
-                </div>
+              <div className="flex flex-col items-end">
+                <Title className="text-2xl">${item.price}</Title>
+                <Button onClick={() => removeFromCart(item.id)}>Remove</Button>
               </div>
-            ))
-          ) : (
-            <p className="text-center">No items in cart</p>
-          )}
-        </div>
-        <div className="flex justify-between mt-4">
-          <Title className="text-2xl">Total</Title>
-          <Title className="text-2xl">${totalPrice}</Title>
-        </div>
-      </Card>
-    </>
+            </div>
+          ))
+        ) : (
+          <p className="text-center">No items in cart</p>
+        )}
+      </div>
+      <div className="flex justify-between mt-4">
+        <Title className="text-2xl">Total</Title>
+        <Title className="text-2xl">${totalPrice}</Title>
+      </div>
+    </Card>
   );
 }
