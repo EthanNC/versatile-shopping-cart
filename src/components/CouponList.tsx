@@ -22,10 +22,10 @@ export function CouponList() {
   const setCoupon = useSetAtom(couponAtom);
   const calcTotalPrice = useSetAtom(calcTotalPriceAtom);
 
-  const applyCoupon = (coupon: Coupon) => {
+  const applyCoupon = (coupon: Coupon | typeof RESET) => {
     setCart((cart) => ({
       ...cart,
-      coupon: coupon.code,
+      coupon: coupon === RESET ? "" : coupon.code,
     }));
     setCoupon(coupon);
     calcTotalPrice();
@@ -35,22 +35,15 @@ export function CouponList() {
     <Card>
       <Title className="text-2xl">Coupons</Title>
       <ul className="flex justify-evenly items-center space-y-4">
-        <div className="flex flex-col">
+        <li className="flex flex-col">
           <Title className="text-2xl">No Coupon</Title>
           <Button
             disabled={cart.coupon === ""}
-            onClick={() => {
-              setCoupon(RESET);
-              setCart((cart) => ({
-                ...cart,
-                coupon: "",
-              }));
-              calcTotalPrice();
-            }}
+            onClick={() => applyCoupon(RESET)}
           >
             Apply
           </Button>
-        </div>
+        </li>
         {coupons.map((coupon) => (
           <li key={coupon.id}>
             <Title className="text-2xl">{coupon.code}</Title>
