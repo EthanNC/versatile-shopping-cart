@@ -1,4 +1,4 @@
-import { Button, Card, Title } from "@tremor/react";
+import { Button, Card, Divider, Title } from "@tremor/react";
 import { useAtom, useSetAtom } from "jotai";
 import {
   calcTotalPriceAtom,
@@ -6,9 +6,10 @@ import {
   Item,
   removeFromCartAtom,
 } from "../lib/cart";
+import { RESET } from "jotai/utils";
 
 export default function CartCard() {
-  const [cart] = useAtom(cartAtom);
+  const [cart, setCart] = useAtom(cartAtom);
   const setRemoveFromCart = useSetAtom(removeFromCartAtom);
   const setCalcTotalPrice = useSetAtom(calcTotalPriceAtom);
 
@@ -21,7 +22,11 @@ export default function CartCard() {
 
   return (
     <Card>
-      <Title className="text-2xl flex justify-center mb-4">Cart</Title>
+      <div className="flex justify-between">
+        <Title className="text-2xl">Cart</Title>
+        <Button onClick={() => setCart(RESET)}>Remove All</Button>
+      </div>
+      <Divider />
       <div className="flex flex-col space-y-4">
         {items.length ? (
           items.map((item) => (

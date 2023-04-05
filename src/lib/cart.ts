@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { atomWithReset } from "jotai/utils";
+import { atomWithStorage, atomWithReset } from "jotai/utils";
 import * as z from "zod";
 
 const itemSchema = z.object({
@@ -12,7 +12,7 @@ const itemSchema = z.object({
 
 export type Item = z.infer<typeof itemSchema>;
 
-export const cartAtom = atom({
+export const cartAtom = atomWithStorage("versatile-shopping-cart", {
   items: [] as Item[],
   totalPrice: 0,
   mainItem: null as Item | null, //have not used this yet
