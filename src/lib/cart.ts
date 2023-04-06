@@ -6,7 +6,7 @@ const itemSchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string(),
-  price: z.string(),
+  price: z.number().nonnegative(),
   quantity: z.number().int().default(1),
 });
 
@@ -32,7 +32,11 @@ export const addToCartAtom = atom(null, (get, set, product: Item) => {
     set(cartAtom, (prev) => ({ ...prev, items: updatedCart }));
   } else {
     const newCartItem = { ...product, quantity: 1 };
-    const updatedCart = [...cart.items, newCartItem];
+    const parsedItem = itemSchema.safeParse(newCartItem);
+    if (!parsedItem.success) {
+      throw new Error(parsedItem.error.message);
+    }
+    const updatedCart = [...cart.items, parsedItem.data];
     set(cartAtom, (prev) => ({ ...prev, items: updatedCart }));
   }
 });
@@ -63,7 +67,7 @@ export const calcTotalPriceAtom = atom(null, (get, set) => {
   const { items } = get(cartAtom);
   const { discount } = get(couponAtom);
   const totalPrice = items.reduce(
-    (acc, item) => acc + Number(item.price) * item.quantity,
+    (acc, item) => acc + item.price * item.quantity,
     0
   );
   const totalDiscount = totalPrice * (discount / 100);

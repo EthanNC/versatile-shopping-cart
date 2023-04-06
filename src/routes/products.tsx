@@ -2,13 +2,14 @@ import { faker } from "@faker-js/faker";
 import { Button, Card, Title } from "@tremor/react";
 import { useAtom, useSetAtom } from "jotai";
 import { addToCartAtom, calcTotalPriceAtom, cartAtom, Item } from "../lib/cart";
+import { useState } from "react";
 
 //using faker js create an array of 3 items
 const products = Array.from({ length: 3 }, () => ({
   id: faker.random.alphaNumeric(10),
   name: faker.commerce.productName(),
   description: faker.commerce.productDescription(),
-  price: faker.commerce.price(),
+  price: Number(faker.commerce.price()),
   quantity: Math.floor(Math.random() * 10) + 1,
 }));
 
@@ -26,10 +27,15 @@ export default function Products() {
   const [cart] = useAtom(cartAtom);
   const setCalcTotalPrice = useSetAtom(calcTotalPriceAtom);
   const setAddToCart = useSetAtom(addToCartAtom);
+  const [error, setError] = useState<Error | null>(null);
 
   const addToCart = (product: Item) => {
-    setAddToCart(product);
-    setCalcTotalPrice();
+    try {
+      setAddToCart(product);
+      setCalcTotalPrice();
+    } catch (e: any) {
+      setError(e);
+    }
   };
 
   const isDisabled = (product: Item) => {
@@ -41,7 +47,7 @@ export default function Products() {
   return (
     <section>
       <Title className="text-2xl flex justify-center mb-4">Products</Title>
-
+      {error && <p className="text-red-500">{error.message}</p>}
       <div className="space-y-24">
         {products.map((product) => (
           <Card key={product.id} className="flex items-center space-x-4">
