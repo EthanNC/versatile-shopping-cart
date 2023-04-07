@@ -7,17 +7,23 @@ import {
   removeFromCartAtom,
 } from "../lib/cart";
 import { RESET } from "jotai/utils";
+import { useState } from "react";
 
 export default function CartCard() {
   const [cart, setCart] = useAtom(cartAtom);
   const setRemoveFromCart = useSetAtom(removeFromCartAtom);
   const setCalcTotalPrice = useSetAtom(calcTotalPriceAtom);
+  const [error, setError] = useState<Error | null>(null);
 
   const { items, totalPrice } = cart;
 
   const removeFromCart = (product: Item) => {
-    setRemoveFromCart(product);
-    setCalcTotalPrice();
+    try {
+      setRemoveFromCart(product);
+      setCalcTotalPrice();
+    } catch (e: any) {
+      setError(e);
+    }
   };
 
   return (
@@ -26,6 +32,7 @@ export default function CartCard() {
         <Title className="text-2xl">Cart</Title>
         <Button onClick={() => setCart(RESET)}>Remove All</Button>
       </div>
+      {error && <p className="text-red-500">{error.message}</p>}
       <Divider />
       <div className="flex flex-col space-y-4">
         {items.length ? (

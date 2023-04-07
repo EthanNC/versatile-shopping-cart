@@ -7,12 +7,21 @@ const itemSchema = z.object({
   name: z.string(),
   description: z.string(),
   price: z.number().nonnegative(),
-  quantity: z.number().int().default(1),
+  quantity: z.number().int().nonnegative().default(1),
 });
 
 export type Item = z.infer<typeof itemSchema>;
 
-export const cartAtom = atomWithStorage("versatile-shopping-cart", {
+const cartSchema = z.object({
+  items: z.array(itemSchema),
+  totalPrice: z.number().nonnegative(),
+  mainItem: z.union([itemSchema, z.null()]),
+  coupon: z.string(),
+});
+
+export type Cart = z.infer<typeof cartSchema>;
+
+export const cartAtom = atomWithStorage<Cart>("versatile-shopping-cart", {
   items: [] as Item[],
   totalPrice: 0,
   mainItem: null as Item | null, //have not used this yet
@@ -31,12 +40,12 @@ export const addToCartAtom = atom(null, (get, set, product: Item) => {
     });
     set(cartAtom, (prev) => ({ ...prev, items: updatedCart }));
   } else {
-    const newCartItem = { ...product, quantity: 1 };
-    const parsedItem = itemSchema.safeParse(newCartItem);
+    const parsedItem = itemSchema.safeParse(product);
     if (!parsedItem.success) {
       throw new Error(parsedItem.error.message);
     }
-    const updatedCart = [...cart.items, parsedItem.data];
+    const newCartItem = { ...product, quantity: 1 };
+    const updatedCart = [...cart.items, newCartItem];
     set(cartAtom, (prev) => ({ ...prev, items: updatedCart }));
   }
 });
@@ -64,14 +73,21 @@ export const removeFromCartAtom = atom(null, (get, set, product: Item) => {
 //set total price on cartAtom. This will become a heavy computation
 //https://jotai.org/docs/guides/performance#heavy-computation
 export const calcTotalPriceAtom = atom(null, (get, set) => {
-  const { items } = get(cartAtom);
+  const cart = get(cartAtom);
   const { discount } = get(couponAtom);
-  const totalPrice = items.reduce(
+  const totalPrice = cart.items.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0
   );
   const totalDiscount = totalPrice * (discount / 100);
   const totalPriceWithDiscount = totalPrice - totalDiscount;
+  const parsedCart = cartSchema.safeParse({
+    ...cart,
+    totalPrice: totalPriceWithDiscount,
+  });
+  if (!parsedCart.success) {
+    throw new Error(parsedCart.error.message);
+  }
   set(cartAtom, (prev) => ({ ...prev, totalPrice: totalPriceWithDiscount }));
 });
 
