@@ -74,11 +74,24 @@ export const removeFromCartAtom = atom(null, (get, set, product: Item) => {
 //https://jotai.org/docs/guides/performance#heavy-computation
 export const calcTotalPriceAtom = atom(null, (get, set) => {
   const cart = get(cartAtom);
-  const { discount } = get(couponAtom);
+  const { discount, discountType } = get(couponAtom);
   const totalPrice = cart.items.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0
   );
+  if (discountType === "flat") {
+    const totalPriceWithDiscount = totalPrice - discount;
+    const parsedCart = cartSchema.safeParse({
+      ...cart,
+      totalPrice: totalPriceWithDiscount,
+    });
+    if (!parsedCart.success) {
+      throw new Error(parsedCart.error.message);
+    }
+    set(cartAtom, (prev) => ({ ...prev, totalPrice: totalPriceWithDiscount }));
+    return;
+  }
+
   const totalDiscount = totalPrice * (discount / 100);
   const totalPriceWithDiscount = totalPrice - totalDiscount;
   const parsedCart = cartSchema.safeParse({
@@ -95,14 +108,16 @@ export const couponSchema = z.object({
   id: z.string(),
   code: z.string(),
   discount: z.number(),
+  discountType: z.enum(["percent", "flat"]),
 });
 
 export type Coupon = z.infer<typeof couponSchema>;
 
-export const couponAtom = atomWithReset({
+export const couponAtom = atomWithReset<Coupon>({
   id: "",
   code: "",
   discount: 0,
+  discountType: "percent",
 });
 
 export const couponCodeAtom = atom((get) => get(couponAtom).code.toUpperCase());
