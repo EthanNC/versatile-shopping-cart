@@ -1,7 +1,12 @@
 import { faker } from "@faker-js/faker";
 import { Button, Card, Title } from "@tremor/react";
 import { RESET } from "jotai/utils";
-import { useCalcTotalPrice, useCart, useCoupon } from "../lib/cart";
+import {
+  useCalcTotalPrice,
+  useCart,
+  useCoupons,
+  useIsCouponInCart,
+} from "../lib/cart";
 import { useState } from "react";
 import { Coupon } from "../lib/types";
 
@@ -22,17 +27,36 @@ const coupons: Array<Coupon> = [
 
 export function CouponList() {
   const [cart, setCart] = useCart();
-  const [, setCoupon] = useCoupon();
+  // const [, setCoupon] = useCoupon();
+  const [selectedCoupons, setSelectedCoupons] = useCoupons();
   const calcTotalPrice = useCalcTotalPrice();
+  const [, isCouponInCart] = useIsCouponInCart();
   const [error, setError] = useState<Error | null>(null);
 
-  const applyCoupon = (coupon: Coupon | typeof RESET) => {
+  const applyCoupon = (coupon: Coupon) => {
     try {
       setCart((cart) => ({
         ...cart,
-        coupon: coupon === RESET ? "" : coupon.code,
+        coupons: [...cart.coupons, coupon.code],
       }));
-      setCoupon(coupon);
+      setSelectedCoupons((coupons) => {
+        return [...coupons, coupon];
+      });
+      calcTotalPrice();
+    } catch (e: any) {
+      setError(e);
+    }
+  };
+
+  const removeCoupon = (coupon: Coupon) => {
+    try {
+      setCart((cart) => ({
+        ...cart,
+        coupons: cart.coupons.filter((code) => code !== coupon.code),
+      }));
+      setSelectedCoupons((coupons) => {
+        return coupons.filter((c) => c.code !== coupon.code);
+      });
       calcTotalPrice();
     } catch (e: any) {
       setError(e);
@@ -44,15 +68,6 @@ export function CouponList() {
       <Title className="text-2xl">Coupons</Title>
       {error && <p className="text-red-500">{error.message}</p>}
       <ul className="flex justify-evenly items-center space-y-4">
-        <li className="flex flex-col">
-          <Title className="text-2xl">No Coupon</Title>
-          <Button
-            disabled={cart.coupon === ""}
-            onClick={() => applyCoupon(RESET)}
-          >
-            Apply
-          </Button>
-        </li>
         {coupons.map((coupon) => (
           <li key={coupon.id}>
             <Title className="text-2xl">{coupon.code}</Title>
@@ -61,12 +76,22 @@ export function CouponList() {
             ) : (
               <p className="text-gray-500">${coupon.discount} off</p>
             )}
-            <Button
-              disabled={coupon.code === cart.coupon || cart.items.length === 0}
-              onClick={() => applyCoupon(coupon)}
-            >
-              Apply
-            </Button>
+            <div className="flex space-x-2">
+              <Button
+                disabled={
+                  isCouponInCart(coupon.code) || cart.items.length === 0
+                }
+                onClick={() => applyCoupon(coupon)}
+              >
+                Apply
+              </Button>
+              <Button
+                disabled={!isCouponInCart(coupon.code)}
+                onClick={() => removeCoupon(coupon)}
+              >
+                Remove
+              </Button>
+            </div>
           </li>
         ))}
       </ul>

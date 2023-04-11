@@ -10,15 +10,6 @@ export const itemSchema = z.object({
 
 export type Item = z.infer<typeof itemSchema>;
 
-export const cartSchema = z.object({
-  items: z.array(itemSchema),
-  totalPrice: z.number().nonnegative(),
-  mainItem: z.union([itemSchema, z.null()]),
-  coupon: z.string(),
-});
-
-export type Cart = z.infer<typeof cartSchema>;
-
 export const couponSchema = z.object({
   id: z.string(),
   code: z.string(),
@@ -27,3 +18,12 @@ export const couponSchema = z.object({
 });
 
 export type Coupon = z.infer<typeof couponSchema>;
+
+export const cartSchema = z.object({
+  items: z.array(itemSchema),
+  totalPrice: z.number().nonnegative(),
+  totalDiscount: z.number().nonnegative(),
+  coupons: z.array(z.string()),
+});
+
+export type Cart = z.infer<typeof cartSchema>;

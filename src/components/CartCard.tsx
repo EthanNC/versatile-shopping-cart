@@ -1,11 +1,17 @@
 import { Button, Card, Divider, Title } from "@tremor/react";
-import { useCalcTotalPrice, useCart, useRemoveFromCart } from "../lib/cart";
+import {
+  useCalcTotalPrice,
+  useCart,
+  useCoupons,
+  useRemoveFromCart,
+} from "../lib/cart";
 import { RESET } from "jotai/utils";
 import { useState } from "react";
 import { Item } from "../lib/types";
 
 export default function CartCard() {
   const [cart, setCart] = useCart();
+  const [, setSelectedCoupons] = useCoupons();
   const setRemoveFromCart = useRemoveFromCart();
   const setCalcTotalPrice = useCalcTotalPrice();
   const [error, setError] = useState<Error | null>(null);
@@ -21,11 +27,16 @@ export default function CartCard() {
     }
   };
 
+  const resetCart = () => {
+    setCart(RESET);
+    setSelectedCoupons(RESET);
+  };
+
   return (
     <Card>
       <div className="flex justify-between">
         <Title className="text-2xl">Cart</Title>
-        <Button onClick={() => setCart(RESET)}>Remove All</Button>
+        <Button onClick={() => resetCart()}>Remove All</Button>
       </div>
       {error && <p className="text-red-500">{error.message}</p>}
       <Divider />

@@ -1,12 +1,19 @@
 import { atom, useAtom, useSetAtom } from "jotai";
 import { atomWithStorage, atomWithReset } from "jotai/utils";
-import { Cart, Coupon, Item, cartSchema, itemSchema } from "./types";
+import {
+  Cart,
+  Coupon,
+  Item,
+  cartSchema,
+  couponSchema,
+  itemSchema,
+} from "./types";
 
 export const cartAtom = atomWithStorage<Cart>("versatile-shopping-cart", {
   items: [] as Item[],
   totalPrice: 0,
-  mainItem: null as Item | null, //have not used this yet
-  coupon: "",
+  totalDiscount: 0,
+  coupons: [] as string[],
 });
 
 export const useCart = () => useAtom(cartAtom);
@@ -61,25 +68,27 @@ export const useRemoveFromCart = () => useSetAtom(removeFromCartAtom);
 //https://jotai.org/docs/guides/performance#heavy-computation
 export const calcTotalPriceAtom = atom(null, (get, set) => {
   const cart = get(cartAtom);
-  const { discount, discountType } = get(couponAtom);
-  const totalPrice = cart.items.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0
-  );
-  if (discountType === "flat") {
-    const totalPriceWithDiscount = totalPrice - discount;
-    const parsedCart = cartSchema.safeParse({
-      ...cart,
-      totalPrice: totalPriceWithDiscount,
-    });
-    if (!parsedCart.success) {
-      throw new Error(parsedCart.error.message);
-    }
-    set(cartAtom, (prev) => ({ ...prev, totalPrice: totalPriceWithDiscount }));
-    return;
-  }
+  const coupons = get(couponsAtom);
 
-  const totalDiscount = totalPrice * (discount / 100);
+  const { totalPrice, totalDiscount } = cart.items.reduce(
+    (acc, item) => {
+      const { totalPrice, totalDiscount } = acc;
+      const { price, quantity } = item;
+      const itemTotalPrice = price * quantity;
+      const itemTotalDiscount = coupons.reduce((acc, coupon) => {
+        if (coupon.discountType === "flat") {
+          return acc + coupon.discount;
+        }
+        return acc + (itemTotalPrice * coupon.discount) / 100;
+      }, 0);
+      return {
+        totalPrice: totalPrice + itemTotalPrice,
+        totalDiscount: totalDiscount + itemTotalDiscount,
+      };
+    },
+    { totalPrice: 0, totalDiscount: 0 }
+  );
+
   const totalPriceWithDiscount = totalPrice - totalDiscount;
   const parsedCart = cartSchema.safeParse({
     ...cart,
@@ -88,18 +97,25 @@ export const calcTotalPriceAtom = atom(null, (get, set) => {
   if (!parsedCart.success) {
     throw new Error(parsedCart.error.message);
   }
-  set(cartAtom, (prev) => ({ ...prev, totalPrice: totalPriceWithDiscount }));
+  set(cartAtom, (prev) => ({
+    ...prev,
+    totalPrice: totalPriceWithDiscount,
+    totalDiscount: totalDiscount,
+  }));
 });
 
 export const useCalcTotalPrice = () => useSetAtom(calcTotalPriceAtom);
 
-export const couponAtom = atomWithReset<Coupon>({
-  id: "",
-  code: "",
-  discount: 0,
-  discountType: "percent",
+export const couponsAtom = atomWithStorage<Coupon[]>(
+  "versatile-shopping-coupons",
+  []
+);
+
+export const useCoupons = () => useAtom(couponsAtom);
+
+export const isCouponInCartAtom = atom(null, (get, set, code: string) => {
+  const cart = get(cartAtom);
+  return cart.coupons.some((coupon) => coupon === code);
 });
 
-export const useCoupon = () => useAtom(couponAtom);
-
-export const couponCodeAtom = atom((get) => get(couponAtom).code.toUpperCase());
+export const useIsCouponInCart = () => useAtom(isCouponInCartAtom);
