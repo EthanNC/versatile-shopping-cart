@@ -1,4 +1,4 @@
-import { Card, Col, Grid, Title } from "@tremor/react";
+import { Col, Grid, Title } from "@tremor/react";
 import { Outlet } from "react-router-dom";
 import CartCard from "./CartCard";
 import { CouponList } from "./CouponList";

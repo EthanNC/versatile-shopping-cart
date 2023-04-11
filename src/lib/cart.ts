@@ -1,25 +1,6 @@
-import { atom } from "jotai";
+import { atom, useAtom, useSetAtom } from "jotai";
 import { atomWithStorage, atomWithReset } from "jotai/utils";
-import * as z from "zod";
-
-const itemSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  description: z.string(),
-  price: z.number().nonnegative(),
-  quantity: z.number().int().nonnegative().default(1),
-});
-
-export type Item = z.infer<typeof itemSchema>;
-
-const cartSchema = z.object({
-  items: z.array(itemSchema),
-  totalPrice: z.number().nonnegative(),
-  mainItem: z.union([itemSchema, z.null()]),
-  coupon: z.string(),
-});
-
-export type Cart = z.infer<typeof cartSchema>;
+import { Cart, Coupon, Item, cartSchema, itemSchema } from "./types";
 
 export const cartAtom = atomWithStorage<Cart>("versatile-shopping-cart", {
   items: [] as Item[],
@@ -27,6 +8,8 @@ export const cartAtom = atomWithStorage<Cart>("versatile-shopping-cart", {
   mainItem: null as Item | null, //have not used this yet
   coupon: "",
 });
+
+export const useCart = () => useAtom(cartAtom);
 
 export const addToCartAtom = atom(null, (get, set, product: Item) => {
   const cart = get(cartAtom);
@@ -50,6 +33,8 @@ export const addToCartAtom = atom(null, (get, set, product: Item) => {
   }
 });
 
+export const useAddToCart = () => useSetAtom(addToCartAtom);
+
 export const removeFromCartAtom = atom(null, (get, set, product: Item) => {
   const cart = get(cartAtom);
   ///if quantity is 1, remove the item from cart
@@ -69,6 +54,8 @@ export const removeFromCartAtom = atom(null, (get, set, product: Item) => {
     set(cartAtom, (prev) => ({ ...prev, items: updatedCart }));
   }
 });
+
+export const useRemoveFromCart = () => useSetAtom(removeFromCartAtom);
 
 //set total price on cartAtom. This will become a heavy computation
 //https://jotai.org/docs/guides/performance#heavy-computation
@@ -104,14 +91,7 @@ export const calcTotalPriceAtom = atom(null, (get, set) => {
   set(cartAtom, (prev) => ({ ...prev, totalPrice: totalPriceWithDiscount }));
 });
 
-export const couponSchema = z.object({
-  id: z.string(),
-  code: z.string(),
-  discount: z.number(),
-  discountType: z.enum(["percent", "flat"]),
-});
-
-export type Coupon = z.infer<typeof couponSchema>;
+export const useCalcTotalPrice = () => useSetAtom(calcTotalPriceAtom);
 
 export const couponAtom = atomWithReset<Coupon>({
   id: "",
@@ -119,5 +99,7 @@ export const couponAtom = atomWithReset<Coupon>({
   discount: 0,
   discountType: "percent",
 });
+
+export const useCoupon = () => useAtom(couponAtom);
 
 export const couponCodeAtom = atom((get) => get(couponAtom).code.toUpperCase());

@@ -1,18 +1,13 @@
 import { Button, Card, Divider, Title } from "@tremor/react";
-import { useAtom, useSetAtom } from "jotai";
-import {
-  calcTotalPriceAtom,
-  cartAtom,
-  Item,
-  removeFromCartAtom,
-} from "../lib/cart";
+import { useCalcTotalPrice, useCart, useRemoveFromCart } from "../lib/cart";
 import { RESET } from "jotai/utils";
 import { useState } from "react";
+import { Item } from "../lib/types";
 
 export default function CartCard() {
-  const [cart, setCart] = useAtom(cartAtom);
-  const setRemoveFromCart = useSetAtom(removeFromCartAtom);
-  const setCalcTotalPrice = useSetAtom(calcTotalPriceAtom);
+  const [cart, setCart] = useCart();
+  const setRemoveFromCart = useRemoveFromCart();
+  const setCalcTotalPrice = useCalcTotalPrice();
   const [error, setError] = useState<Error | null>(null);
 
   const { items, totalPrice } = cart;

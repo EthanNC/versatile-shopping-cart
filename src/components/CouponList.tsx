@@ -1,9 +1,9 @@
 import { faker } from "@faker-js/faker";
 import { Button, Card, Title } from "@tremor/react";
-import { useAtom, useSetAtom } from "jotai";
 import { RESET } from "jotai/utils";
-import { calcTotalPriceAtom, cartAtom, Coupon, couponAtom } from "../lib/cart";
+import { useCalcTotalPrice, useCart, useCoupon } from "../lib/cart";
 import { useState } from "react";
+import { Coupon } from "../lib/types";
 
 const coupons: Array<Coupon> = [
   {
@@ -21,9 +21,9 @@ const coupons: Array<Coupon> = [
 ];
 
 export function CouponList() {
-  const [cart, setCart] = useAtom(cartAtom);
-  const setCoupon = useSetAtom(couponAtom);
-  const calcTotalPrice = useSetAtom(calcTotalPriceAtom);
+  const [cart, setCart] = useCart();
+  const [, setCoupon] = useCoupon();
+  const calcTotalPrice = useCalcTotalPrice();
   const [error, setError] = useState<Error | null>(null);
 
   const applyCoupon = (coupon: Coupon | typeof RESET) => {
