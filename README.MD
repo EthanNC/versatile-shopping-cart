@@ -17,9 +17,9 @@ A versatile shopping cart using best practices for react state management.
 
 - [x] Have a cart that allows for multiple products
 
-- [ ] Have a cart that allows for multiple coupons and different discount types (percentage, fixed)
+- [x] Have a cart that allows for multiple coupons and different discount types (percentage, fixed)
 
-- [ ] Add validation when mutating the cart using Zod
+- [x] Add validation when mutating the cart using Zod
 
 - [x] Have a cart that can be persisted to local storage
 
