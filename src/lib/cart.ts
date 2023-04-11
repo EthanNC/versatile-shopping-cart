@@ -93,6 +93,7 @@ export const calcTotalPriceAtom = atom(null, (get, set) => {
   const parsedCart = cartSchema.safeParse({
     ...cart,
     totalPrice: totalPriceWithDiscount,
+    totalDiscount: totalDiscount,
   });
   if (!parsedCart.success) {
     throw new Error(parsedCart.error.message);
