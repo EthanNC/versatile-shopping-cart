@@ -9,23 +9,38 @@ import {
 } from "../lib/cart";
 import { useState } from "react";
 import { Coupon } from "../lib/types";
+import { useLoaderData } from "react-router-dom";
 
-const coupons: Array<Coupon> = [
-  {
-    id: faker.random.alphaNumeric(10),
-    code: "10OFF",
-    discount: 10,
-    discountType: "percent",
-  },
-  {
-    id: faker.random.alphaNumeric(10),
-    code: "20OFF",
-    discount: 20,
-    discountType: "flat",
-  },
-];
+function fetchCoupons() {
+  return new Promise<Coupon[]>((resolve) => {
+    setTimeout(() => {
+      const coupons: Array<Coupon> = [
+        {
+          id: faker.random.alphaNumeric(10),
+          code: "10OFF",
+          discount: 10,
+          discountType: "percent",
+        },
+        {
+          id: faker.random.alphaNumeric(10),
+          code: "20OFF",
+          discount: 20,
+          discountType: "flat",
+        },
+      ];
+      resolve(coupons);
+    }, 1000); // simulate a 2 second delay
+  });
+}
+
+CouponList.loader = async () =>
+  await fetchCoupons().then((coupons) => ({ coupons }));
 
 export function CouponList() {
+  const { coupons } = useLoaderData() as Awaited<{
+    coupons: Coupon[];
+  }>;
+
   const [cart, setCart] = useCart();
   // const [, setCoupon] = useCoupon();
   const [selectedCoupons, setSelectedCoupons] = useCoupons();
@@ -39,6 +54,7 @@ export function CouponList() {
         ...cart,
         coupons: [...cart.coupons, coupon.code],
       }));
+
       setSelectedCoupons((coupons) => {
         return [...coupons, coupon];
       });
