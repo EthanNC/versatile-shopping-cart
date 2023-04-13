@@ -70,24 +70,28 @@ export const calcTotalPriceAtom = atom(null, (get, set) => {
   const cart = get(cartAtom);
   const coupons = get(couponsAtom);
 
-  const { totalPrice, totalDiscount } = cart.items.reduce(
+  const { totalPrice } = cart.items.reduce(
     (acc, item) => {
-      const { totalPrice, totalDiscount } = acc;
+      const { totalPrice } = acc;
       const { price, quantity } = item;
       const itemTotalPrice = price * quantity;
-      const itemTotalDiscount = coupons.reduce((acc, coupon) => {
-        if (coupon.discountType === "flat") {
-          return acc + coupon.discount;
-        }
-        return acc + (itemTotalPrice * coupon.discount) / 100;
-      }, 0);
       return {
         totalPrice: totalPrice + itemTotalPrice,
-        totalDiscount: totalDiscount + itemTotalDiscount,
+        // totalDiscount: totalDiscount + itemTotalDiscount,
       };
     },
-    { totalPrice: 0, totalDiscount: 0 }
+    { totalPrice: 0 }
   );
+
+  const totalDiscount = coupons.reduce((acc, coupon) => {
+    const { discount, discountType } = coupon;
+    if (discountType === "flat") {
+      return acc + discount;
+    } else if (discountType === "percent") {
+      return acc + (totalPrice * discount) / 100;
+    }
+    return acc;
+  }, 0);
 
   const totalPriceWithDiscount = totalPrice - totalDiscount;
   const parsedCart = cartSchema.safeParse({
